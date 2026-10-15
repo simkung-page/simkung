@@ -212,7 +212,8 @@ function tl(a,k){return '<div class="tags">'+a.map(function(x){return tile(x,k)}
 function ovh(g,o){
   var A=function(x){return Array.isArray(x)?x:[]},h='',ho=A(o.ho),mj=A(o.mj),bi=A(o.bi),gk=A(o.gk),bb=A(o.bb),bj=A(o.bj),bt=A(o.bt),hs=(o.hs&&typeof o.hs==='object')?o.hs:{};
   h+='<section><h3>호부</h3>';
-  if(ho.length||mj.length)h+='<div class="two">'+(ho.length?'<div class="sub"><b>공용 스킬 <span>'+ho.length+'개</span></b>'+tl(ho,'ho')+'</div>':'')+(mj.length?'<div class="sub mj"><b>문장 전용 스킬 <span>'+mj.length+'개</span></b>'+tl(mj,'mj')+'</div>':'')+'</div>';
+  var NO='<span style="color:var(--sub);font-size:13px">없음</span>';
+  h+='<div class="two"><div class="sub"><b>공용 스킬 <span>'+ho.length+'개</span></b>'+(ho.length?tl(ho,'ho'):NO)+'</div><div class="sub mj"><b>문장 전용 스킬 <span>'+mj.length+'개</span></b>'+(mj.length?tl(mj,'mj'):NO)+'</div></div>';
   h+='<div class="sub" style="margin-top:10px"><b>호부 능력치 <span>1~3번째 옵션</span></b><div class="hs3">'+[1,2,3].map(function(n){return '<div class="sub"><div style="font:700 13px Noto Sans KR,sans-serif;color:var(--plum);margin-bottom:4px">'+n+'번째 옵션</div>'+(hs[n]?'<div class="tags"><span class="t chip on">'+esc(hs[n])+'</span></div>':'<span style="color:var(--sub);font-size:13px">없음</span>')+'</div>'}).join('')+'</div></div>';
   h+='</section>';
   if(bi.length||gk.length||(o.bm||'')){h+='<section><h3>비책</h3>';

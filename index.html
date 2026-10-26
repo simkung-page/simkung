@@ -198,22 +198,28 @@ function show(i){
   for(var k=0;k<b.length;k++)b[k].setAttribute("aria-pressed",k===i?"true":"false");
 }
 var nav=document.getElementById("nav");
-function navR(){nav.innerHTML='';G.forEach(function(g,i){
+function navR(){nav.innerHTML='';var cn=G[ci||0].n;G.forEach(function(g){
   var b=document.createElement("button");
   b.innerHTML=av(g,34)+g.n+'<small>'+g.t+'</small>';
-  b.onclick=function(){show(i)};
+  b.setAttribute("aria-pressed",g.n===cn?"true":"false");
+  b.onclick=function(){show(gIdx(g.n))};
   nav.appendChild(b);
 })}
+function updMv(){var u=document.getElementById('gup'),d=document.getElementById('gdn');if(u)u.disabled=ci<=0;if(d)d.disabled=ci>=G.length-1}
+function ordKey(){return G.map(function(g){return g.n}).join('|')}
+try{var _o=JSON.parse(localStorage.getItem('sk_ord')||'null');if(Array.isArray(_o))applyOrd(_o)}catch(e){}
 navR();
 function gIdx(n){for(var i=0;i<G.length;i++)if(G[i].n===n)return i;return 0}
 function applyOrd(L){var pos=function(n){var k=L.indexOf(n);return k<0?999:k};G.sort(function(a,b){return pos(a.n)-pos(b.n)})}
-async function mvG(d){var t=ci+d;if(!ROLE||!DB||t<0||t>=G.length)return;var a=G[ci];G[ci]=G[t];G[t]=a;ci=t;navR();show(ci);
+async function mvG(d){var t=ci+d;if(!ROLE||!DB||t<0||t>=G.length)return;var o=ci,a=G[o];G[o]=G[t];G[t]=a;ci=t;svO();var ns=nav.children;if(d<0)nav.insertBefore(ns[o],ns[t]);else nav.insertBefore(ns[t],ns[o]);updMv();
   try{await DB.doc('cfg/order').set({list:G.map(function(g){return g.n}),ts:Date.now()})}
-  catch(e){var b=G[ci];G[ci]=G[ci-d];G[ci-d]=b;ci=ci-d;navR();show(ci);var m=document.getElementById('gmvm');if(m)m.textContent='순서를 저장하지 못했습니다. 규칙 게시와 관리자 권한을 확인하세요.'}}
+  catch(e){var b=G[ci];G[ci]=G[ci-d];G[ci-d]=b;ci=ci-d;navR();updMv();var m=document.getElementById('gmvm');if(m)m.textContent='순서를 저장하지 못했습니다. 규칙 게시와 관리자 권한을 확인하세요.'}}
 var OPT={ho:'물리연타 법술연타 강타 비전 치명추격 광폭 예봉 사기 방어파괴 끈기 신중 행군 철벽 쾌속 반격 질주 부활 노여움 흡혈 치유감소 봉쇄 해제 조롱 유언 정화'.split(' '),mj:'매의눈 관통 명료 비호 치유 신성치유 후발 장악'.split(' '),or:'제갈량 조인 손책 장성채 대교 곽가 태사자 손상향 하후돈 장비 황충 견희 소교 위연 왕이 조운'.split(' '),br:'원소 주유 관우 여포 축융 화타 장각 전위 화웅 채문희'.split(' '),bm:'종횡 합종 화광 동진 영허 후생 임세 무봉 분야 전전 강인 불공'.split(' '),gk:'시인 인과 방어 파동 겁화 극도 귀허'.split(' '),bb:'선견지명 이일대로 암도진창 배수일전'.split(' ')};
 var LB={ho:'공용 스킬 (호부)',mj:'문장 전용 스킬',bi:'비책',gk:'극품비책',bb:'병법'},KS=['ho','mj','bi','gk','bb'],cur,saved=[],note='';
 
-var EM=null,cur0=null,ci=0,GO={};
+var EM=null,cur0=null,ci=0,GO={};try{var _g=JSON.parse(localStorage.getItem('sk_go')||'null');if(_g&&typeof _g==='object')GO=_g}catch(e){}
+function svO(){try{localStorage.setItem('sk_ord',JSON.stringify(G.map(function(g){return g.n})))}catch(e){}}
+function svG(){try{localStorage.setItem('sk_go',JSON.stringify(GO))}catch(e){}}
 function tl(a,k){return '<div class="tags">'+a.map(function(x){return tile(x,k)}).join('')+'</div>'}
 function ovh(g,o){
   var A=function(x){return Array.isArray(x)?x:[]},h='',ho=A(o.ho),mj=A(o.mj),bi=A(o.bi),gk=A(o.gk),bb=A(o.bb),bj=A(o.bj),bt=A(o.bt),hs=(o.hs&&typeof o.hs==='object')?o.hs:{};
@@ -245,7 +251,7 @@ async function edSave(){
   var n=EM;
   var body={name:n,ho:cur.ho,mj:cur.mj,bi:cur.bi,gk:cur.gk,bb:cur.bb.slice(0,1),bo:cur.bb.length?cur.bo:{},bs:cur.bb.length?cur.bs:{},hs:cur.hs||{},bj:(cur.bj||[]).slice(0,4),bm:(cur.bm||'').slice(0,500),bt:(cur.bt||[]).slice(0,3),ts:Date.now()};
   try{await DB.doc('gen/'+n).set(body);
-    GO[n]=body;EM=null;if(cur0)cur=cur0;note='';show(ci)}
+    GO[n]=body;svG();EM=null;if(cur0)cur=cur0;note='';show(ci)}
   catch(e){note='저장하지 못했습니다. ('+((e&&e.code)||'오류')+') 규칙 게시와 관리자 권한을 확인하세요.';mr()}}
 function blank(){return{id:'',name:'',nick:'',ho:[],mj:[],bi:[],gk:[],bb:[],bo:{},bs:{},hs:{},bj:[],bm:'',bt:[],memo:'',pw:''}}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
@@ -295,7 +301,7 @@ function admBind(){document.getElementById('admb').addEventListener('click',admO
   document.getElementById('admo').addEventListener('keydown',function(e){if(e.key==='Escape')admClose();if(e.key==='Enter'&&e.target.id==='admpw')admLogin();if(e.key==='Enter'&&(e.target.id==='rsp1'||e.target.id==='rsp2'))pwReset()})}
 admBind();
 function setL(m){lmsg=m;var e=document.getElementById('lmsg');if(e)e.textContent=m}
-(async function(){try{if(typeof firebase==='undefined'){rl();return}firebase.initializeApp({apiKey:"AIzaSyCQgKmdR_82rut0teD1gDMoPCwNimE2GBU",authDomain:"simkung-samguk.firebaseapp.com",projectId:"simkung-samguk",storageBucket:"simkung-samguk.firebasestorage.app",messagingSenderId:"961454617923",appId:"1:961454617923:web:7a99acdb3ebfb98dceabf6"});DB=firebase.firestore();AUTH=firebase.auth();AUTH.onAuthStateChanged(function(u){if(!u){ROLE=null;AEM='';admUI();rl();if(!document.getElementById('mine').hidden)mr();return}DB.doc('admins/'+u.email).get().then(function(d){var r=d.exists?d.data().role:null;if(r==='super'||r==='manager'){ROLE=r;AEM=u.email;admUI();rl();if(!document.getElementById('mine').hidden)mr();var m=document.getElementById('admm');if(m)m.textContent='';admClose()}else{ROLE=null;var m2=document.getElementById('admm');if(m2){m2.style.color='var(--phys)';m2.textContent='관리자 권한이 없는 계정입니다.'}AUTH.signOut()}}).catch(function(){ROLE=null;var m3=document.getElementById('admm');if(m3){m3.style.color='var(--phys)';m3.textContent='권한 확인에 실패했습니다.'}AUTH.signOut()})});DB.collection('chars').onSnapshot(function(sn){saved=sn.docs.map(function(d){return Object.assign({},d.data(),{id:d.id})}).sort(function(a,b){return (b.ts||0)-(a.ts||0)});rl()},function(){DB=null;rl()});DB.collection('gen').onSnapshot(function(sn){GO={};sn.docs.forEach(function(d){GO[d.id]=d.data()});if(!EM)show(ci)},function(){});DB.doc('cfg/order').onSnapshot(function(d){var L=d.exists?d.data().list:null;if(Array.isArray(L)){var nm=G[ci].n;applyOrd(L);ci=gIdx(nm);navR();if(!EM)show(ci)}},function(){})}catch(e){DB=null}})();
+(async function(){try{if(typeof firebase==='undefined'){rl();return}firebase.initializeApp({apiKey:"AIzaSyCQgKmdR_82rut0teD1gDMoPCwNimE2GBU",authDomain:"simkung-samguk.firebaseapp.com",projectId:"simkung-samguk",storageBucket:"simkung-samguk.firebasestorage.app",messagingSenderId:"961454617923",appId:"1:961454617923:web:7a99acdb3ebfb98dceabf6"});DB=firebase.firestore();AUTH=firebase.auth();AUTH.onAuthStateChanged(function(u){if(!u){ROLE=null;AEM='';admUI();rl();if(!document.getElementById('mine').hidden)mr();return}DB.doc('admins/'+u.email).get().then(function(d){var r=d.exists?d.data().role:null;if(r==='super'||r==='manager'){ROLE=r;AEM=u.email;admUI();rl();if(!document.getElementById('mine').hidden)mr();var m=document.getElementById('admm');if(m)m.textContent='';admClose()}else{ROLE=null;var m2=document.getElementById('admm');if(m2){m2.style.color='var(--phys)';m2.textContent='관리자 권한이 없는 계정입니다.'}AUTH.signOut()}}).catch(function(){ROLE=null;var m3=document.getElementById('admm');if(m3){m3.style.color='var(--phys)';m3.textContent='권한 확인에 실패했습니다.'}AUTH.signOut()})});DB.collection('chars').onSnapshot(function(sn){saved=sn.docs.map(function(d){return Object.assign({},d.data(),{id:d.id})}).sort(function(a,b){return (b.ts||0)-(a.ts||0)});rl()},function(){DB=null;rl()});DB.collection('gen').onSnapshot(function(sn){GO={};sn.docs.forEach(function(d){GO[d.id]=d.data()});svG();if(!EM)show(ci)},function(){});DB.doc('cfg/order').onSnapshot(function(d){var L=d.exists?d.data().list:null;if(Array.isArray(L)){var nm=G[ci].n,pk=ordKey();applyOrd(L);svO();if(ordKey()===pk)return;ci=gIdx(nm);navR();updMv()}},function(){})}catch(e){DB=null}})();
 function chips(k){var all=OPT[k].concat(cur[k].filter(function(x){return OPT[k].indexOf(x)<0}));return '<div class="tags">'+all.map(function(x){var on=cur[k].indexOf(x)>=0;return '<button type="button" class="tile chip'+(on?' on':'')+'" aria-pressed="'+on+'" data-k="'+k+'" data-v="'+esc(x)+'">'+ic(x,IC[k]||'ho')+'<span class="nm">'+esc(x)+'</span></button>'}).join('')+'</div>'}
 function chips2(k,s){var bs=k==='bm'?bonusSet():{};return '<div class="tags">'+OPT[k].map(function(x){var on=cur[s].indexOf(x)>=0,bx=on&&bs[x];return '<button type="button" class="tile chip'+(on?' on':'')+(bx?' x':'')+'" aria-pressed="'+on+'" data-k="'+s+'" data-v="'+esc(x)+'">'+ic(x,IC[k]||'ho')+'<span class="nm">'+esc(x)+'</span>'+(bx?'<span style="font-size:10px;color:var(--plum);font-weight:700">부착</span>':'')+'</button>'}).join('')+'</div>'}
 function oth(){var o=cur.bi.filter(function(x){return OPT.br.indexOf(x)<0&&OPT.or.indexOf(x)<0&&OPT.bm.indexOf(x)<0});if(!o.length)return '';return '<div class="sub" style="margin-top:10px"><b>분류 미정 (엑셀 항목)</b><div class="tags">'+o.map(function(x){return '<button type="button" class="tile chip on" aria-pressed="true" data-k="bi" data-v="'+esc(x)+'">'+ic(x,'ho')+'<span class="nm">'+esc(x)+'</span></button>'}).join('')+'</div></div>'}

@@ -72,19 +72,26 @@ img.ic{background:none;object-fit:contain;border-radius:6px;filter:var(--tf,none
 .tile.chip.on.x{border-style:dashed;border-width:2px;border-color:var(--plum)}
 .admb{position:fixed;right:6px;bottom:6px;width:22px;height:22px;border-radius:50%;border:0;background:transparent;color:var(--sub);opacity:.07;font:700 13px sans-serif;cursor:pointer;padding:0;z-index:40}.admb:hover,.admb:focus-visible{opacity:.6}.admb.on{opacity:.07;color:var(--jade)}
 .admlo{margin-left:8px;font-size:12px;padding:2px 10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--sub);cursor:pointer;vertical-align:middle;font-family:inherit}
-.admlo:hover{color:var(--phys);border-color:var(--phys)}.admo{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}.admo[hidden]{display:none}.admd{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:100%;max-width:320px;box-shadow:0 10px 40px rgba(0,0,0,.35)}.admd h3{margin:0 0 12px}.admd label{display:block;font-size:13px;color:var(--sub);margin:8px 0 4px}.admd input{width:100%;box-sizing:border-box}.admd .row{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}#admm{font-size:13px;color:var(--phys);min-height:18px;margin-top:8px}.admbadge{display:inline-block;margin-left:8px;font-size:12px;padding:2px 8px;border-radius:10px;border:1px solid var(--jade);color:var(--jade);vertical-align:middle}</style>
+.admlo:hover{color:var(--phys);border-color:var(--phys)}.admo{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}.admo[hidden]{display:none}.admd{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:100%;max-width:320px;box-shadow:0 10px 40px rgba(0,0,0,.35)}.admd h3{margin:0 0 12px}.admd label{display:block;font-size:13px;color:var(--sub);margin:8px 0 4px}.admd input{width:100%;box-sizing:border-box}.admd .row{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}#admm{font-size:13px;color:var(--phys);min-height:18px;margin-top:8px}.admbadge{display:inline-block;margin-left:8px;font-size:12px;padding:2px 8px;border-radius:10px;border:1px solid var(--jade);color:var(--jade);vertical-align:middle}.gl{margin:0;padding-left:1.4em;display:grid;gap:10px;font-size:15px;line-height:1.6}
+.gl li::marker{font-weight:700;color:var(--plum)}
+.gl li.key{font-weight:700;color:var(--phys,#b4442f)}
+</style>
 </head>
 <body>
 <header>
   <h1>심쿵삼국지 장수 세팅 정리</h1>
   <p>장수를 고르면 호부·문장, 비책, 병법·스킬을 한 화면에서 볼 수 있습니다.</p>
-  <div class="tabs"><button type="button" id="t1" aria-pressed="true">장수 세팅</button><button type="button" id="t2" aria-pressed="false">내 캐릭터</button></div>
+  <div class="tabs"><button type="button" id="t1" aria-pressed="true">장수 세팅</button><button type="button" id="t2" aria-pressed="false">내 캐릭터</button><button type="button" id="t3" aria-pressed="false">가이드</button></div>
 </header>
 <div class="wrap" id="view">
   <nav id="nav" aria-label="장수 목록"></nav>
   <main id="main" aria-live="polite"></main>
 </div>
 <div class="wrap" id="mine" hidden><main id="mm"></main></div>
+<div class="wrap" id="gd" hidden>
+  <nav id="gnav" aria-label="가이드 목록"></nav>
+  <main id="gmain" aria-live="polite"></main>
+</div>
 <button type="button" id="admb" class="admb" aria-label="관리자">관</button>
 <div class="admo" id="admo" hidden><div class="admd" role="dialog" aria-modal="true" aria-labelledby="admt"><h3 id="admt">관리자 로그인</h3><div id="admbody"></div><div id="admm" role="status"></div></div></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -403,8 +410,14 @@ f+='<section><h3>병법 옵션</h3>'+(cur.bb.length?'<div class="two">'+ocards('
 if(!EM)f+='<section id="lsec"></section>';
 (EM?document.getElementById('main'):mm).innerHTML=f;if(!EM)rl()}
 var mm=document.getElementById('mm'),mine=document.getElementById('mine'),vw=document.getElementById('view');
-function tab(n){if(EM&&n!==1){EM=null;if(cur0)cur=cur0;show(ci)}vw.hidden=n!==1;mine.hidden=n!==2;document.getElementById('t1').setAttribute('aria-pressed',n===1);document.getElementById('t2').setAttribute('aria-pressed',n===2);if(n===2)mr()}
-document.getElementById('t1').onclick=function(){tab(1)};document.getElementById('t2').onclick=function(){tab(2)};
+var GD=['무쌍 국가전','산하쟁패','천명대결','종횡천하','난세쟁패'],gi=0;
+var GC={'무쌍 국가전':{t:'국가전 가이드',l:[['첫날 빈성 부시기는 하지 않는다.'],['상점까지의 최소한의 길 만 뚫으며 공성권 6개이상 소모하지 않는다.'],['매일 이주령 & 공성령을 풀로 산다.'],['81섭 앞은 지정석으로 방어한다. (위치 알려드리겠습니다)'],['젤중요 !! 매시각 59분 30초일때 상대 땅 뒤집는다. (새벽도 동일)',1],['상점이 밀렸을 시 무리하게 먹으려고하지 않는다. (4-5분 모여서 포위 후 순식간에 작업한다.)']]}};
+function gbody(n){var c=GC[n];if(!c)return '<section><h3>'+esc(n)+' 안내</h3><div class="sub"><span style="color:var(--sub);font-size:14px">가이드 내용이 아직 등록되지 않았습니다.</span></div></section>';return '<section><h3>'+esc(c.t)+'</h3><div class="sub"><ol class="gl">'+c.l.map(function(x){return '<li'+(x[1]?' class="key"':'')+'>'+esc(x[0])+'</li>'}).join('')+'</ol></div></section>'}
+
+function gshow(i){gi=i;var h='<div class="top"><h2>'+esc(GD[i])+'</h2><span class="badge" style="background:var(--sub)">가이드</span></div>'+gbody(GD[i]);document.getElementById('gmain').innerHTML=h;var b=document.querySelectorAll('#gnav button');for(var k=0;k<b.length;k++)b[k].setAttribute('aria-pressed',k===i?'true':'false')}
+(function(){var n=document.getElementById('gnav');GD.forEach(function(t,i){var b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=function(){gshow(i)};n.appendChild(b)})})();
+function tab(n){if(EM&&n!==1){EM=null;if(cur0)cur=cur0;show(ci)}vw.hidden=n!==1;mine.hidden=n!==2;document.getElementById('gd').hidden=n!==3;document.getElementById('t1').setAttribute('aria-pressed',n===1);document.getElementById('t2').setAttribute('aria-pressed',n===2);document.getElementById('t3').setAttribute('aria-pressed',n===3);if(n===2)mr();if(n===3)gshow(gi)}
+document.getElementById('t1').onclick=function(){tab(1)};document.getElementById('t2').onclick=function(){tab(2)};document.getElementById('t3').onclick=function(){tab(3)};
 var onInp=function(e){var i=e.target.id;if(i==='fn')cur.name=e.target.value;if(i==='fk')cur.nick=e.target.value;if(i==='fp')cur.pw=e.target.value;if(i==='fbm')cur.bm=e.target.value;};mm.addEventListener('input',onInp);document.getElementById('main').addEventListener('input',onInp);
 var onKd=function(e){var t=e.target;if(e.key==='Enter'&&t.classList.contains('add')){e.preventDefault();var v=t.value.trim(),k=t.dataset.k;if(v&&cur[k].indexOf(v)<0)cur[k].push(v);mr()}};mm.addEventListener('keydown',onKd);document.getElementById('main').addEventListener('keydown',onKd);
 var onClk=function(e){var t=e.target.closest('button');if(!t)return;
